@@ -1,23 +1,34 @@
 <!-- templates/front.html -->
 <!DOCTYPE html>
 <html lang="en">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 <head>
     <meta charset="UTF-8">
-    <title>OCR Image Upload</title>
+    <title>BILL UPLOAD</title>
 </head>
 <body>
-    <h1>Upload an Image for OCR</h1>
+    <div class="container">
+        <h1>Upload Your Bill</h1>
 
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit">Upload</button>
-    </form>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Upload</button>
+        </form>
 
-    {% if ocr_text %}
-        <h2>Extracted Text:</h2>
-        <pre>{{ ocr_text }}</pre>
-    {% endif %}
+        {% if ocr_text %}
+        <div class="result-container">
+            <div class="bill-image">
+                <h2>Uploaded Image:</h2>
+                <img src="{{ image_url }}" alt="Uploaded Bill">
+            </div>
+            <div class="extracted-text">
+                <h2>Extracted Text:</h2>
+                <pre>{{ ocr_text }}</pre>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>

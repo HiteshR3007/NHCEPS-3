@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
 # Config
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # App setup
@@ -29,6 +29,9 @@ def ocr_core(image_path):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    ocr_text = None
+    image_url = None
+    
     if request.method == 'POST':
         if 'image' not in request.files:
             return redirect(request.url)
@@ -41,26 +44,12 @@ def index():
             file.save(file_path)
 
             text = ocr_core(file_path)
-            return render_template('front.html', ocr_text=text)
+            image_url = url_for('static', filename=f'uploads/{filename}')
 
-    return render_template('front.html', ocr_text=None)
+            return render_template('front.html', ocr_text=text, image_url=image_url)
 
-if __name__ == '__main__':
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.run(debug=True)
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        file = request.files.get('image')
-        if file and file.filename:
-            filename = secure_filename(file.filename)
-            path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(path)
-            text = "fake OCR result"  # replace with actual OCR
-            return render_template('front.html', ocr_text=text)
-    return render_template('front.html', ocr_text=None)
+    return render_template('front.html', ocr_text=ocr_text, image_url=image_url)
 
 if __name__ == '__main__':
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     app.run(debug=True)
