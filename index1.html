@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Upload System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Bill Upload System</h1>
+        <div class="upload-container">
+            <div class="upload-area" id="dropZone">
+                <img src="https://cdn-icons-png.flaticon.com/512/2088/2088470.png" alt="upload icon" class="upload-icon">
+                <p>Drag and drop your bills here</p>
+                <p>or</p>
+                <label for="fileInput" class="upload-button">Choose Files</label>
+                <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+            </div>
+            <div class="file-list" id="fileList">
+                <!-- Uploaded files will appear here -->
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
