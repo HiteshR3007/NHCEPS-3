@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image OCR</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .upload-box {
+      margin-top: 20px;
+    }
+
+    .image-preview {
+      max-width: 300px;
+      border: 2px solid #555;
+      border-radius: 8px;
+    }
+
+    .extracted-text {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: left;
+      min-width: 300px;
+      white-space: pre-wrap;
+    }
+
+    button, input[type="file"] {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload an Image for OCR</h1>
+  <div class="upload-box">
+    <input type="file" id="imageInput" accept="image/*" />
+    <br />
+    <button onclick="handleUpload()">Upload</button>
+  </div>
+
+  <div class="container" id="resultContainer" style="display: none;">
+    <img id="uploadedImage" class="image-preview" src="" alt="Uploaded Image" />
+    <div class="extracted-text" id="extractedText">
+      <!-- OCR result will be shown here -->
+    </div>
+  </div>
+
+  <script>
+    function handleUpload() {
+      const input = document.getElementById('imageInput');
+      const file = input.files[0];
+
+      if (!file) {
+        alert("Please select an image.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById("uploadedImage").src = e.target.result;
+        document.getElementById("resultContainer").style.display = "flex";
+
+        // Simulate OCR text (replace this with real OCR logic or backend call)
+        document.getElementById("extractedText").textContent = `! FRESHNEST
+
+GROCERIES
+John Smith   04/20/2024
+APPLES    4x   3.00
+BREAD     1x   2.50
+EGGS      1x   2.00
+LETTUCE   1x   1.50
+POTATOES  5x   4.50
+SALES TAX      1.40
+TOTAL        $14.90`;
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
