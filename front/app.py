@@ -1,5 +1,5 @@
 import os
-import cv2
+#import cv2
 import pytesseract
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename

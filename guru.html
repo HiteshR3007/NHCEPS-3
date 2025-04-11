@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image OCR to Excel</title>
+  <style>
+    body {
+      background-color: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .upload-box {
+      margin-top: 20px;
+    }
+
+    .image-preview {
+      max-width: 300px;
+      border: 2px solid #555;
+      border-radius: 8px;
+    }
+
+    .extracted-text {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: left;
+      min-width: 300px;
+      white-space: pre-wrap;
+    }
+
+    button, input[type="file"] {
+      margin-top: 10px;
+    }
+
+    #loading {
+      margin-top: 10px;
+      font-style: italic;
+      color: #aaa;
+    }
+
+    #downloadBtn, #csvBtn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      border: none;
+      background-color: #333;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+</head>
+<body>
+  <h1>Upload an Image for OCR</h1>
+  <div class="upload-box">
+    <input type="file" id="imageInput" accept="image/*" />
+    <br />
+    <button onclick="handleUpload()">Upload</button>
+    <div id="loading"></div>
+  </div>
+
+  <div class="container" id="resultContainer" style="display: none;">
+    <img id="uploadedImage" class="image-preview" src="" alt="Uploaded Image" />
+    <div class="extracted-text" id="extractedText">
+      <!-- OCR result will be shown here -->
+    </div>
+  </div>
+
+  <button id="downloadBtn" style="display:none;" onclick="downloadText()">Download as .txt</button>
+  <button id="csvBtn" style="display:none;" onclick="downloadAsCSV()">Download as Excel (CSV)</button>
+
+  <script>
+    function handleUpload() {
+      const input = document.getElementById('imageInput');
+      const file = input.files[0];
+
+      if (!file) {
+        alert("Please select an image.");
+        return;
+      }
+
+      document.getElementById("loading").textContent = "Processing OCR...";
+      document.getElementById("downloadBtn").style.display = "none";
+      document.getElementById("csvBtn").style.display = "none";
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById("uploadedImage").src = e.target.result;
+        document.getElementById("resultContainer").style.display = "flex";
+
+        Tesseract.recognize(
+          e.target.result,
+          'eng',
+          { logger: m => console.log(m) }
+        ).then(({ data: { text } }) => {
+          const formatted = formatReceipt(text);
+          document.getElementById("extractedText").textContent = formatted;
+          document.getElementById("loading").textContent = "";
+          document.getElementById("downloadBtn").style.display = "inline-block";
+          document.getElementById("csvBtn").style.display = "inline-block";
+        }).catch(err => {
+          console.error(err);
+          document.getElementById("extractedText").textContent = "Error extracting text.";
+          document.getElementById("loading").textContent = "";
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function formatReceipt(rawText) {
+      const lines = rawText.trim().split('\n').map(line => line.trim()).filter(line => line !== "");
+      const formattedLines = [];
+      let inItems = false;
+      let addedHeader = false;
+
+      lines.forEach(line => {
+        if (/sales tax/i.test(line) || /total/i.test(line)) {
+          inItems = false;
+        }
+
+        if (/\b(apples|bread|eggs|lettuce|potatoes)\b/i.test(line)) {
+          inItems = true;
+        }
+
+        if (inItems && /^[a-zA-Z]/.test(line)) {
+          if (!addedHeader) {
+            formattedLines.push("Item        Qty  Price");
+            formattedLines.push("------------------------");
+            addedHeader = true;
+          }
+
+          const parts = line.match(/(.+?)\s+(\d+x)\s+([\d.]+)/i);
+          if (parts) {
+            const [, item, qty, price] = parts;
+            formattedLines.push(`${item.padEnd(12)} ${qty.padEnd(4)} ${price}`);
+          } else {
+            formattedLines.push(line);
+          }
+        } else {
+          formattedLines.push(line);
+        }
+      });
+
+      return formattedLines.join('\n');
+    }
+
+    function downloadText() {
+      const text = document.getElementById("extractedText").textContent;
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "receipt.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadAsCSV() {
+      const text = document.getElementById("extractedText").textContent;
+      const lines = text.trim().split("\n");
+      let csv = "Item,Qty,Price\n";
+
+      lines.forEach(line => {
+        const match = line.match(/(.+?)\s+(\d+x)\s+([\d.]+)/);
+        if (match) {
+          const [, item, qty, price] = match;
+          csv += `"${item.trim()}","${qty}","${price}"\n`;
+        }
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "receipt.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
